@@ -1,0 +1,130 @@
+* {
+    box-sizing: border-box;
+    font-family: Tahoma,Verdana,Segoe,sans-serif; 
+  }
+  
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    color: white;
+    background-size: 100% 100%;
+    font-size: 50px;
+    background-image: url('./resources/dnb.png');
+  }
+  
+  .screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .home {
+  }
+  
+  .dial {
+    display: none;
+  }
+  
+  h1 {
+    font-size: 100px;
+  }
+  
+  .back {
+    position: absolute;
+    bottom: 5%;
+    left: 5%;
+    font-size: 0.7em;
+    opacity: 0.8;
+  }
+  
+  .numbers {
+    margin: 0em;
+  }
+  
+  .dial-button {
+    display: inline-block;
+    background-size: 200px 200px;
+    background-position: center top;
+    background-repeat: no-repeat;
+    width: 200px;
+    margin: 2em 1em;
+    text-align: center;
+    padding-top: 220px;
+    font-size: 0.8em;
+    transform: scale(1);
+    transition: transform 0.2s;
+  }
+  
+  .dial-button:active {
+    transform: scale(1.1);
+  }
+  
+  .loans {
+    background-image: url('./resources/avatar1.png');
+  }
+  
+  .cards {
+    background-image: url('./resources/avatar2.png');
+  }
+  
+  .savings {
+    background-image: url('./resources/ahauge.png');
+  }
+  
+  .flags {
+    position: absolute;
+    bottom: 7%;
+    right: 4%;
+  }
+  
+  .flag-button {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+  }
+  
+  .norwegian {
+    background-image: url("./resources/Norway.png");
+  }
+  
+  .english {
+    background-image: url("./resources/United-kingdom.png");
+  }
+  
+  
+  .alert {
+    position: absolute;
+    display: none;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    color: #3d727f;
+    text-align: center;
+    padding: 0.3em;
+    font-size: 0.4em;
+  }
+  
+  .quit {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 300px;
+    height: 250px;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  

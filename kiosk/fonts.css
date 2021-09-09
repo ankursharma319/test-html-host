@@ -1,0 +1,32 @@
+@font-face {
+    font-family: 'ciscosansextralight';
+    src: url('resources/fonts/ciscosansextralight-webfont.eot');
+    src: url('resources/fonts/ciscosansextralight-webfont.eot?#iefix') format('embedded-opentype'),
+    url('resources/fonts/ciscosansextralight-webfont.woff2') format('woff2'),
+    url('resources/fonts/ciscosansextralight-webfont.woff') format('woff'),
+    url('resources/fonts/ciscosansextralight-webfont.ttf') format('truetype'),
+    url('resources/fonts/ciscosansextralight-webfont.svg#ciscosansextralight') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'ciscosanslight';
+    src: url('resources/fonts/ciscosanslight-webfont.eot');
+    src: url('resources/fonts/ciscosanslight-webfont.eot?#iefix') format('embedded-opentype'),
+    url('resources/fonts/ciscosanslight-webfont.woff2') format('woff2'),
+    url('resources/fonts/ciscosanslight-webfont.woff') format('woff'),
+    url('resources/fonts/ciscosanslight-webfont.ttf') format('truetype'),
+    url('resources/fonts/ciscosanslight-webfont.svg#ciscosanslight') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'ciscosansthin';
+    src: url('resources/fonts/CiscoSans Thin.otf');
+    font-weight: normal;
+    font-style: normal;
+}

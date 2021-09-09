@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!-- <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=1920, user-scalable=1" />
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  <link rel="icon" type="image/png" href="assets/images/logo.png"> -->
+  <!--<link href="fonts.css" rel="stylesheet" type="text/css" />-->
+  <link href="style.css" rel="stylesheet" type="text/css" />
+  <title>Kiosk</title>
+  <script src="strings.js"></script>
+  <script src="mock-xapi.js"></script>
+  <script src="xapi.js"></script>
+  <script src="index.js"></script>
+</head>
+
+<body>
+  <div class="screen home">
+    <h1 class="title">DNB Self Service</h1>
+    <div class="touch">Touch to start</div>
+    <div class="flags">
+      <div class="flag-button english" data-lang="English"></div>
+      <div class="flag-button norwegian" data-lang="Norwegian"></div>
+    </div>
+  </div>
+  <div class="screen dial">
+    <div class="choose">Choose your service</div>
+    <div class="numbers">
+      <a class="dial-button loans" href="sip:erica.talking@ivr.vc">
+        Loans
+      </a>
+      <a class="dial-button cards" href="sip:erica.talking@ivr.vc">
+        Cards
+      </a>
+      <a class="dial-button savings" href="sip:erica.talking@ivr.vc">
+        Savings
+      </a>
+    </div>
+    <div class="back">Back</div>
+  </div>
+  <div class="quit"></div>
+  <div class="alert"></div>
+</body>
+
+</html>
