@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Mockup ThinClient with Apps iframe</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #apps_demo {
+        width: 800px;
+        height: 1000px;
+        border: 1px solid #ddd;
+        margin: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h3>Mockup ThinClient with Apps iframe</h3>
+    <h4>Send Events to SDK:</h4>
+    <button onclick="sendEventsToSDK()">Send All Events</button>
+    <button onclick="sendEventsToSDKTheme()">
+      Send application:themeChanged
+    </button>
+    <button onclick="sendEventsMeetingUrl()">Send meeting.url Events</button>
+    <span>As Phase1: <input type="checkbox" name="asPhase1" id="asPhase1" /></span>
+
+    <br />
+    <iframe id="apps_demo" src="./demo_local.html"></iframe>
+    <script>
+      var iframe = document.getElementById("apps_demo");
+      var childWindow = iframe.contentWindow;
+
+      //
+      // Message sender and receiver
+      //
+      var iframeSendMessage = function (msg) {
+        console.log('THIN send msg=', msg);
+        iframe.contentWindow.postMessage(JSON.stringify(msg), "*");
+      };
+
+      window.addEventListener("message", function (e) {
+        if (e.source !== childWindow) {
+          return; // received msg from iframe only
+        }
+
+        var receivedMsg = JSON.parse(e.data);
+        handler(receivedMsg);
+      });
+
+      // Send Events actively
+      function sendEventsToSDK() {
+        iframeSendMessage(makeEventApplicationDisplayContextChanged());
+        iframeSendMessage(makeEventApplicationThemeChanged());
+        iframeSendMessage(makeEventApplicationShareStateChanged());
+        iframeSendMessage(makeMeetingInfoChanged());
+        iframeSendMessage(makeMeetingRoleChanged());
+        iframeSendMessage(makeSpaceInfoChanged());
+      }
+      function sendEventsToSDKTheme() {
+        iframeSendMessage(makeEventApplicationThemeChanged());
+      }
+      function sendEventsMeetingUrl() {
+        iframeSendMessage(makeEventApplicationMeetingUrlChanged());
+      }
+
+      var asPhase1 = document.getElementById('asPhase1');
+      asPhase1.addEventListener("change", function(){
+        var isChecked = asPhase1.checked;
+        console.log('asPhase1', isChecked);
+        if (isChecked){
+          iframeSendMessage(handleGetAplicationPhase1({requestId:null}, true));
+        }else{
+          iframeSendMessage(handleApplicationInitialize({requestId:null}, true));
+        }
+      }, false);
+
+      //
+      // mockup handlers and responses
+      //
+      var handler = function (msg) {
+        console.log("THIN received", msg);
+        var res = null;
+        switch (msg.request) {
+          case "initializeGetApplication":
+            // intentionally delay for testing
+            // setTimeout(function () {
+              // res = handleGetAplicationPhase1(msg);
+              res = {code:6, requestId: msg.requestId};
+              iframeSendMessage(res);
+            // }, 800);
+            break;
+
+          case "application.initialize":
+            // intentionally delay for testing
+            setTimeout(function () {
+              res = handleApplicationInitialize(msg);
+              iframeSendMessage(res);
+            }, 800);
+            break;
+
+          case "getUser":
+              res = handleGetUserPhase1(msg);
+              iframeSendMessage(res);
+            return;
+            break;
+
+          case "getMeeting":
+            res = handleGetMeetingPhase1(msg);
+            break;
+          case "application.context.getMeeting":
+            res = handleGetMeeting(msg);
+            break;
+          case "application.context.getSpace":
+            res = handleGetSpace(msg);
+            break;
+          case "application.context.getUser":
+            // intentionally delay for testing
+            setTimeout(function () {
+              res = handleGetUser(msg);
+              iframeSendMessage(res);
+            }, 2000);
+            return;
+            break;
+          case "application.getRedirectUrl":
+            res = handleGetRedirectUrl(msg);
+            break;
+          case "application.performance":
+            res = handlePerformance(msg);
+            break;
+
+          case "application.setShareUrl":
+            res = handleSetShareUrl(msg);
+            break;
+          case "application.clearShareUrl":
+            res = handleClearShareUrl(msg);
+            break;
+          case "application.authenticate":
+            res = handleAuthenticate(msg);
+            break;
+          case "application.openUrlInSystemBrowser":
+            res = handleOpenUrlInSystemBrowser(msg);
+            break;
+          case "application.listen":
+            res = handleListen(msg);
+            break;
+          //
+          // [Backward Compatibility] MC41.6
+          //
+          case "application.startSession":
+            res = handleStartSession(msg);
+            break;
+          case "application.endSession":
+            res = handleEndSession(msg);
+            break;
+          default:
+            break;
+        }
+
+        if (res) {
+          iframeSendMessage(res);
+        }
+      };
+
+      var handlePerformance = function (msg) {
+        console.log('THIN', 'handlePerformance msg=', msg);
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+        };
+      };
+
+      var handleAuthenticate = function (msg) {
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: { authenticationCode: "some.authentication.com" },
+        };
+      };
+
+      var handleOpenUrlInSystemBrowser = function (msg) {
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: {},
+        };
+      };
+
+      var handleClearShareUrl = function (msg) {
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: {},
+        };
+      };
+
+      var handleSetShareUrl = function (msg) {
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: {},
+        };
+      };
+
+      var handleGetRedirectUrl = function (msg) {
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: { redirectUrl: "the.redirect.url" },
+        };
+      };
+      var handleListen = function (msg) {
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: {},
+        };
+      };
+
+      var handleGetUserPhase1 = function (msg) {
+        var data = {
+          displayName: "zhenyu1234 zhenyu1234",
+          email: "zhenyu1234@mailinator.com",
+          id: "86844ce7-28df-411e-a611-8c40447e65a6",
+          orgId: "6e863103-7cdb-442d-ad2e-0af0a25b9247",
+          jwt:
+            "eyJhbGciOiJSUzI1NiJ9.eyJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImlzcyI6Imh0dHBzOlwvXC9pZGJyb2tlcmJ0cy53ZWJleC5jb21cL2lkYiIsImNvbS5jaXNjby51c2VyLnV1aWQiOiIzOWIyYmQxNy1mZTUyLTVhOTEtOGM4ZC1lMmIwZDE3MzVhYTgiLCJjb20uY2lzY28uY29udGV4dC51dWlkLm1lZXRpbmdpZCI6ImU3ZmQzN2Y0LWJhODctNTdmNC1hODBlLTg5YTRhZTdjNGRjZCIsImNvbS5jaXNjby5jb250ZXh0LnV1aWQuY29uZmVyZW5jZWlkIjoiZmQ5NGMxZmEtZjIzZC01MjA0LWIwNWEtOGE2ZGUxNmRhMDI3IiwiZ2l2ZW5fbmFtZSI6IiIsImF1ZCI6IlkybHpZMjl6Y0dGeWF6b3ZMM1Z6TDBGUVVFeEpRMEZVU1U5T0x6VXhPRGMxTUdRMExUTTNaRGN0TkdZMk1DMWhPV0UzTFdFd1pURTFOREZoTmpSa05nPT0iLCJjb20uY2lzY28udXNlci5vcmdpZCI6ImZiMjg5YzYzLTg5MGMtNTBlYy04NDg1LTMzZWRmNTI3YjkxYSIsIm5hbWUiOiIiLCJjb20uY2lzY28udXNlci5sZXZlbCI6WyJlbmhhbmNlZCIsImFkbWluIl0sImV4cCI6MTYyNjc0MzIwMywiaWF0IjoxNjI2NjU2ODAzLCJmYW1pbHlfbmFtZSI6IiIsImVtYWlsIjoiIiwiY29tLmNpc2NvLnVzZXIuaW5mbyI6IntcIm1lZXRpbmdfaWRcIjpcImIyZjdjMjI1NzIyNDQyYTQ5MGVlNzdlYmViN2Y5MDNjX0lfMjAwMDYyNDA3ODE0NDE1NzMzXCJ9In0.RUa2RaDUm9JyVksSv14yrvt2aHVanxcjZIWHOFxtFYnkVUjpX1DHnLCv3X3ck2oj1ZOum0ICbXYBioibYRkoOP3--QTt1U1UWKi0glMQ9Lr8wfnKgSVxoFhKwawZPQ0IgTv7EHhMY-ktfeT17jj-vdbLAq4Y5CO5RnlPHkclUBY-wOS1PUFY7ArtFFil8rFiOxLpwaWz6KrgbBEcH-cfd-NqeIfMHTbjYm1tf4yMZiwyMB3Ql19E2kf3yM19EXPfyK8f80SJmkxVJMEbGacqqGyr4ap34LNvjHbsMY6JuYTU-AfqCoOz028RKbwXWyxlW5Vjc6L89aGxqWWqFiJ0JQ",
+        };
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: data,
+        };
+      };
+
+      var handleGetUser = function (msg) {
+        var data = {
+          displayName: "zhenyu1234 zhenyu1234",
+          email: "zhenyu1234@mailinator.com",
+          id: "86844ce7-28df-411e-a611-8c40447e65a6",
+          orgId: "6e863103-7cdb-442d-ad2e-0af0a25b9247",
+          token:
+            "eyJhbGciOiJSUzI1NiJ9.eyJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImlzcyI6Imh0dHBzOlwvXC9pZGJyb2tlcmJ0cy53ZWJleC5jb21cL2lkYiIsImNvbS5jaXNjby51c2VyLnV1aWQiOiIzOWIyYmQxNy1mZTUyLTVhOTEtOGM4ZC1lMmIwZDE3MzVhYTgiLCJjb20uY2lzY28uY29udGV4dC51dWlkLm1lZXRpbmdpZCI6ImU3ZmQzN2Y0LWJhODctNTdmNC1hODBlLTg5YTRhZTdjNGRjZCIsImNvbS5jaXNjby5jb250ZXh0LnV1aWQuY29uZmVyZW5jZWlkIjoiZmQ5NGMxZmEtZjIzZC01MjA0LWIwNWEtOGE2ZGUxNmRhMDI3IiwiZ2l2ZW5fbmFtZSI6IiIsImF1ZCI6IlkybHpZMjl6Y0dGeWF6b3ZMM1Z6TDBGUVVFeEpRMEZVU1U5T0x6VXhPRGMxTUdRMExUTTNaRGN0TkdZMk1DMWhPV0UzTFdFd1pURTFOREZoTmpSa05nPT0iLCJjb20uY2lzY28udXNlci5vcmdpZCI6ImZiMjg5YzYzLTg5MGMtNTBlYy04NDg1LTMzZWRmNTI3YjkxYSIsIm5hbWUiOiIiLCJjb20uY2lzY28udXNlci5sZXZlbCI6WyJlbmhhbmNlZCIsImFkbWluIl0sImV4cCI6MTYyNjc0MzIwMywiaWF0IjoxNjI2NjU2ODAzLCJmYW1pbHlfbmFtZSI6IiIsImVtYWlsIjoiIiwiY29tLmNpc2NvLnVzZXIuaW5mbyI6IntcIm1lZXRpbmdfaWRcIjpcImIyZjdjMjI1NzIyNDQyYTQ5MGVlNzdlYmViN2Y5MDNjX0lfMjAwMDYyNDA3ODE0NDE1NzMzXCJ9In0.RUa2RaDUm9JyVksSv14yrvt2aHVanxcjZIWHOFxtFYnkVUjpX1DHnLCv3X3ck2oj1ZOum0ICbXYBioibYRkoOP3--QTt1U1UWKi0glMQ9Lr8wfnKgSVxoFhKwawZPQ0IgTv7EHhMY-ktfeT17jj-vdbLAq4Y5CO5RnlPHkclUBY-wOS1PUFY7ArtFFil8rFiOxLpwaWz6KrgbBEcH-cfd-NqeIfMHTbjYm1tf4yMZiwyMB3Ql19E2kf3yM19EXPfyK8f80SJmkxVJMEbGacqqGyr4ap34LNvjHbsMY6JuYTU-AfqCoOz028RKbwXWyxlW5Vjc6L89aGxqWWqFiJ0JQ",
+        };
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: data,
+        };
+      };
+
+      var handleGetMeetingPhase1 = function (msg) {
+        var data = {
+          id: "000 0000 0000",
+          title: "iframe meeting title",
+          startTime: "2021-04-29T14:00:00.000Z", // new Date('2021-04-29T14:00:00.000Z')
+          endTime: "2021-04-29T14:00:00.000Z", // Date.parse('2021-04-29T14:00:00.000Z');
+          userRoles: [123]
+        };
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: data,
+        };
+      };
+
+      var handleGetMeeting = function (msg) {
+        var data = {
+          id: "000 0000 0000",
+          conferenceId: "FB4C3EF1-64CA-4AA9-9F02-E4D9A02DAF05",
+          title: "iframe meeting title",
+          startTime: "2021-04-29T14:00:00.000Z", // new Date('2021-04-29T14:00:00.000Z')
+          endTime: "2021-04-29T14:00:00.000Z", // Date.parse('2021-04-29T14:00:00.000Z');
+          userRoles: ["HOST", "PANELIST"],
+          meetingType: "MEETING",
+          url: 'https://locus-a.wbx2.com/locus/api/v1/loci/714D7129-9785-4C5C-87B7-0FC538F3ED30/',
+          derivedId: '03BA48A1-80A3-4779-B32C-3107E92029B1'
+        };
+        return {
+          code: 0, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: data,
+        };
+      };
+
+      var handleGetSpace = function (msg) {
+        var data = {
+          id: "000 0000 0000",
+          title: "iframe space title",
+        };
+        return {
+          code: 6, // 0: success, 1: generic error
+          requestId: msg.requestId,
+          data: data,
+        };
+      };
+
+      var handleApplicationInitialize = function (msg, force) {
+        var data = {
+          application: {
+            about: "Webex App, Version:41.10.0.master.17",
+            capabilities: ['test'],
+            deviceType: "DESKTOP",
+            displayContext: "test",
+            isPrivateDataAvailable: true,
+            isShared: false,
+            language: "en",
+            sdkVersion: "1.1.*",
+            theme: "LIGHT",
+          },
+        };
+
+        if (force){
+          return {
+            code: 0, // 0: success, 1: generic error
+            request: 'application.initialize',
+            data: data,
+          };
+        }else{
+          return {
+            code: 0, // 0: success, 1: generic error
+            requestId: msg.requestId,
+            data: data,
+          };
+        }
+      };
+
+      // [Backward Compatibility] MC41.6
+      const handleGetAplicationPhase1 = (msg, force) => {
+        const data = {
+          deviceType: "DESKTOP",
+          displayContext: "MEETING_SIDEBAR",
+          isPrivateDataAvailable: true,
+          isShared: true,
+          applicationTheme: 'DARK'
+        };
+        return force? {
+          code: 0,
+          data: data,
+          request: 'initializeGetApplication'
+        } : {
+          code: 0,
+          requestId: msg.requestId,
+          data: data,
+        };
+      };
+
+      // [Backward Compatibility] MC41.6
+      const handleEndSession = (msg) => {
+        return {
+          code: 0,
+          requestId: msg.requestId
+        };
+      };
+
+      // [Backward Compatibility] MC41.6
+      const handleStartSession = (msg) => {
+        return {
+          code: 0,
+          requestId: msg.requestId
+        };
+      };
+
+      var makeEventApplicationDisplayContextChanged = function (msg) {
+        var data = {
+          displayContext: "MEETING_STANDALONE_WINDOW",
+        };
+        return {
+          type: "event",
+          request: "application:displayContextChanged",
+          requestId: null,
+          data: data,
+        };
+      };
+
+      var useDarkTheme = true;
+      var makeEventApplicationThemeChanged = function (msg) {
+        var data = {
+          theme: useDarkTheme? "DARK" : "LIGHT",
+        };
+        useDarkTheme = !useDarkTheme;
+        return {
+          type: "event",
+          request: "application:themeChanged",
+          requestId: null,
+          data: data,
+        };
+      };
+      var makeEventApplicationMeetingUrlChanged = function (msg) {
+        return {
+          type: "event",
+          request: "meeting:infoChanged",
+          requestId: null,
+          data: {
+            url: 'new url ' + Math.random()
+          },
+        };
+      };
+
+      var makeEventApplicationShareStateChanged = function (msg) {
+        var data = {
+          isShared: true,
+        };
+        return {
+          type: "event",
+          request: "application:shareStateChanged",
+          requestId: null,
+          data: data,
+        };
+      };
+
+      var makeMeetingInfoChanged = function (msg) {
+        var data = {
+          id: "F9FE9BDF-8011-4F93-B5CB-71AFFDD7085C",
+          conferenceId: "CF11DBF0-443F-48A6-BE2C-38BF4C21514B",
+          title: "Daily Standup",
+          startTime: "2021-01-17T13:00:00.00Z",
+          endTime: "2021-01-17T13:00:10.00Z",
+          userRoles: ["HOST"],
+          meetingType: "MEETING",
+        };
+        return {
+          type: "event",
+          request: "meeting:infoChanged",
+          requestId: null,
+          data: data,
+        };
+      };
+
+      var makeMeetingRoleChanged = function (msg) {
+        var data = {
+          userRoles: ["HOST", "PANELIST"],
+        };
+        return {
+          type: "event",
+          request: "meeting:roleChanged",
+          requestId: null,
+          data: data,
+        };
+      };
+
+      var makeSpaceInfoChanged = function (msg) {
+        var data = {
+          id: "space 101",
+          title: "space mockup title",
+        };
+        return {
+          type: "event",
+          request: "space:infoChanged",
+          requestId: null,
+          data: data,
+        };
+      };
+    </script>
+  </body>
+</html>

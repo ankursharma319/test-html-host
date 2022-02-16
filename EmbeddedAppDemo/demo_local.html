@@ -1,0 +1,438 @@
+<!doctype html><html lang="en"><head><title>Apps SDK example</title><style>section,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin: 4px 0;
+        padding: 0;
+        position: relative;
+      }
+      pre { padding: 4px 0; }
+      .string { color: green; }
+      .number { color: darkorange; }
+      .boolean { color: blue; }
+      .null { color: magenta; }
+      .key { color: rgb(164, 0, 0); }
+
+      .output {
+        width: 100%;
+        height: 200px;
+        overflow: scroll;
+        border: 1px solid #ddd;
+        font-size: 14px;
+      }
+      .label {
+        position: absolute;
+        right: 5px;
+        top: -10px;
+        text-shadow: 1px 1px 1px #bababa;
+      }
+      .group {
+        margin: 16px 0;
+        border-left: 4px solid green;
+        padding-left: 8px;
+      }
+      .group h5 {
+        margin: 8px 0;
+      }
+      .group .inputs {
+        margin: 8px 0;
+      }</style><script>if (!window.Webex){
+        console.log('Webex not exists (expected)', Date.now())
+      }
+      window.onload = function() {
+        if (Webex){
+          console.log('Webex exists (expected)', Date.now())
+        } else {
+          console.error('Webex not exists (shoud exist)', Date.now())
+        }
+      };
+
+      console.log("userAgent", navigator.userAgent);
+
+      function print(msg, tag) {
+        window.lineOfLog = window.lineOfLog || 0;
+        let target = null;
+        let content = null;
+        const tm = new Date();
+
+        if (tag === "ERROR") {
+          tag = '<span style="color:red">Error</span>';
+          target = document.getElementById("outputError");
+          content = target.innerHTML;
+          content = `<li>[${tag} ${tm.toLocaleTimeString()}] ${msg}</li> ${content}`;
+        } else {
+          target = document.getElementById("outputInfo");
+          content = target.innerHTML;
+          content = `<li>[${tm.toLocaleTimeString()}] ${msg}</li> ${content}`;
+        }
+
+        target.innerHTML = content;
+      }
+
+      function printState(title, data) {
+        const titleElement = document.getElementById("stateTitle");
+        const jsonElement = document.getElementById("stateContent");
+        titleElement.innerHTML = title;
+        jsonElement.innerHTML = syntaxHighlight(data);
+      }
+
+      function syntaxHighlight(json) {
+        if (typeof json != "string") {
+          json = JSON.stringify(json, undefined, 2);
+        }
+        json = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return json.replace(
+          /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+          function (match) {
+            var cls = "number";
+            if (/^"/.test(match)) {
+              if (/:$/.test(match)) {
+                cls = "key";
+              } else {
+                cls = "string";
+              }
+            } else if (/true|false/.test(match)) {
+              cls = "boolean";
+            } else if (/null/.test(match)) {
+              cls = "null";
+            }
+            return '<span class="' + cls + '">' + match + "</span>";
+          }
+        );
+      }
+
+      // for the testing of dark mode
+      function changeTheme(theme) {
+        var body = document.getElementsByTagName("body")[0];
+        if (theme === "DARK") {
+          body.style["background"] = "#121212";
+          body.style["color"] = "#F7F7F7";
+        } else {
+          body.style["background"] = "#FFFFFF";
+          body.style["color"] = "#000000";
+        }
+      }
+
+      setTimeout(function () {
+        var app = new Webex.Application();
+        app.onReady().then(function () {
+          print("onReady done");
+          changeTheme(app.theme);
+          app.on("application:themeChanged", function (theme) {
+            changeTheme(theme);
+            console.log("Event application:themeChanged theme=" + theme);
+            print("Event application:themeChanged theme=" + theme);
+          });
+        });
+      }, 500);
+
+      //
+      // External API examples
+      //
+      function onReady() {
+        var app = new Webex.Application();
+
+        // multiple onReady checks are ok.
+        app.onReady().then(function () {
+          console.log("The 1st onReady resolved");
+          print("The 1st onReady resolved");
+        });
+        app.onReady().then(function () {
+          console.log("The 2nd onReady resolved");
+          print("The 2nd onReady resolved");
+        });
+      }
+
+      function onClickAuthenticate() {
+        var app = new Webex.Application();
+
+        app
+          .authenticate("https://authenticate.url", 500, 500)
+          .then(function (res) {
+            console.log("Promise authenticate success", JSON.stringify(res));
+            print("Promise authenticate success", JSON.stringify(res));
+          })
+          .catch(function (reason) {
+            console.error("authenticate: fail reason=", JSON.stringify(reason));
+            print(
+              "authenticate: fail reason=",
+              JSON.stringify(reason),
+              "ERROR"
+            );
+          });
+      }
+
+      function onClickOpenUrlInSystemBrowser() {
+        var app = new Webex.Application();
+
+        var url = document.getElementById("urlInSystemBrowser").value;
+
+        app.onReady().then(function () {
+          app.openUrlInSystemBrowser(url)
+          .then(function (res) {
+            console.log("[openUrlInSystemBrowser] Promise success", JSON.stringify(res));
+            print("[openUrlInSystemBrowser] Promise success", JSON.stringify(res));
+          })
+          .catch(function (reason) {
+            console.error("[openUrlInSystemBrowser] fail reason=" + reason);
+            print("[openUrlInSystemBrowser] fail reason=" + reason);
+          });
+        });
+      }
+
+      function onClickGetRedirectUrl() {
+        var app = new Webex.Application();
+
+        app
+          .getRedirectUrl()
+          .then(function (res) {
+            console.log("Promise getRedirectUrl success", JSON.stringify(res));
+            print("Promise getRedirectUrl success", JSON.stringify(res));
+          })
+          .catch(function (reason) {
+            console.error("getRedirectUrl: fail reason=" + reason);
+            print("getRedirectUrl: fail reason=" + reason, "ERROR");
+          });
+      }
+
+      function onClickSetShareUrl() {
+        var app = new Webex.Application();
+
+        var internalUrl =
+          document.getElementById("internalUrl").value ||
+          "https://this.is.participant.url";
+        var externalUrl =
+          document.getElementById("externalUrl").value ||
+          "https://this.is.external.url";
+        var title =
+          document.getElementById("setShareUrlTitle").value || "a title";
+        var opt = {};
+
+        app
+          .setShareUrl(internalUrl, externalUrl, title, opt)
+          .then(function (res) {
+            console.log("Promise setShareUrl success", JSON.stringify(res));
+            print("Promise setShareUrl success", JSON.stringify(res));
+          })
+          .catch(function (reason) {
+            console.error("setShareUrl: fail reason=" + reason);
+            print("setShareUrl: fail reason=" + reason);
+          });
+      }
+
+      function onClickClearShareUrl() {
+        var app = new Webex.Application();
+
+        app
+          .clearShareUrl()
+          .then(function (res) {
+            console.log("Promise clearShareUrl success");
+            print("Promise clearShareUrl success");
+          })
+          .catch(function (reason) {
+            console.error("clearShareUrl: fail reason=" + reason);
+            print("clearShareUrl: fail reason=" + reason, "ERROR");
+          });
+      }
+
+      function onClickGetUser() {
+        var app = new Webex.Application();
+
+        // async function run(){
+        //   try{
+        //     const user = await app.context.getUser()
+        //     console.log(user);
+        //   } catch (error) {
+        //     console.log('ERROR GET USER', error)
+        //   }
+        // }
+
+        // run();
+
+        app.context
+          .getUser()
+          .then(function (user) {
+            console.log("Promise getUser success", JSON.stringify(user));
+            print("Promise getUser success", JSON.stringify(user));
+            printState("User States", user);
+          })
+          .catch(function (reason) {
+            console.error("getUser: fail reason=" + reason);
+            print("getUser: fail reason=" + reason, "ERROR");
+          });
+      }
+
+      function onClickGetMeeting() {
+        var app = new Webex.Application();
+
+        app.context
+          .getMeeting()
+          .then(function (meeting) {
+            console.log("Promise getMeeting success", JSON.stringify(meeting));
+            print("Promise getMeeting success", JSON.stringify(meeting));
+            printState("Meeting States", meeting);
+          })
+          .catch(function (reason) {
+            console.error("getMeeting: fail reason=" + reason);
+            print("getMeeting: fail reason=" + reason, "ERROR");
+          });
+      }
+
+      function onClickGetSpace() {
+        var app = new Webex.Application();
+
+        app.context
+          .getSpace()
+          .then(function (space) {
+            console.log("Promise getSpace success", JSON.stringify(space));
+            print("Promise getSpace success", JSON.stringify(space));
+            printState("Space States", space);
+          })
+          .catch(function (reason) {
+            console.error("getSpace: fail reason=" + reason);
+            print("getSpace: fail reason=" + reason, "ERROR");
+          });
+      }
+
+      function onClickGetApplicationStates() {
+        var app = new Webex.Application();
+        var state = {
+          deviceType: app.deviceType,
+          isPrivateDataAvailable: app.isPrivateDataAvailable,
+          displayContext: app.displayContext,
+          isShared: app.isShared,
+          capabilities: app.capabilities,
+          embeddedSdkVersion: app.embeddedSdkVersion,
+          sdkVersion: app.sdkVersion,
+          theme: app.theme,
+          about: app.about,
+          language: app.language
+        };
+
+        printState("Application States", state);
+      }
+
+      function addEvents() {
+        var app = new Webex.Application();
+
+        app
+          .listen()
+          .then(function () {
+            console.log("Listen().then() ok");
+            print("Listen().then() ok");
+            app.on(
+              "application:displayContextChanged",
+              function (displayContext) {
+                console.log(
+                  "Event application:displayContextChanged displayContext=" +
+                    displayContext
+                );
+                print(
+                  "Event application:displayContextChanged displayContext=" +
+                    displayContext
+                );
+              }
+            );
+            print("Add Event: application:displayContextChanged");
+
+            app.on("application:shareStateChanged", function (isShared) {
+              console.log(
+                "Event application:shareStateChanged isShared=" + isShared
+              );
+              print("Event application:shareStateChanged isShared=" + isShared);
+            });
+            print("Add Event: application:shareStateChanged");
+
+            app.on("application:themeChanged", function (theme) {
+              console.log("Event application:themeChanged theme=" + theme);
+              print("Event application:themeChanged theme=" + theme);
+              changeTheme(theme);
+            });
+            print("Add Event: application:themeChanged");
+
+            app.on("meeting:infoChanged", function (meeting) {
+              console.log(
+                "Event meeting:infoChanged update=" + JSON.stringify(meeting)
+              );
+              print(
+                "Event meeting:infoChanged update=" + JSON.stringify(meeting)
+              );
+            });
+            print("Add Event: application:infoChanged");
+
+            app.on("meeting:roleChanged", function (userRole) {
+              console.log("Event meeting:roleChanged userRole=" + userRole);
+              print("Event meeting:roleChanged userRole=" + userRole);
+            });
+            print("Add Event: application:roleChanged");
+
+            app.on("space:infoChanged", function (space) {
+              console.log(
+                "Event space:infoChanged update=" + JSON.stringify(space)
+              );
+              print("Event space:infoChanged update=" + JSON.stringify(space));
+            });
+            print("Add Event: application:infoChanged");
+          })
+          .catch(function (reason) {
+            console.error("listen: fail reason=" + reason);
+            print("listen: fail reason=" + reason, "ERROR");
+          });
+      }
+
+      function removeEvents() {
+        var app = new Webex.Application();
+
+        // remove the event one by one
+        app.off("application:displayContextChanged");
+        app.off("application:shareStateChanged");
+        app.off("application:themeChanged");
+        app.off("meeting:infoChanged");
+        app.off("meeting:roleChanged");
+        app.off("space:infoChanged");
+        print("Remove Event: application:displayContextChanged");
+        print("Remove Event: application:shareStateChanged");
+        print("Remove Event: application:themeChanged");
+        print("Remove Event: meeting:infoChanged");
+        print("Remove Event: meeting:roleChanged");
+        print("Remove Event: space:infoChanged");
+      }
+
+      function stopListening() {
+        var app = new Webex.Application();
+
+        // remove all events
+        app.stopListening();
+      }
+
+      function onClickStartSession() {
+        var app = new Webex.Application();
+
+        app
+          ._internalStartSession("<url>", "<title>", {})
+          .then((res) => {
+            console.log("startSession success");
+            print("startSession success");
+          })
+          .catch((reason) => {
+            console.error("startSession: fail reason=" + reason);
+            print("startSession: fail reason=" + reason, "ERROR");
+          });
+      }
+      function onClickEndSession() {
+        var app = new Webex.Application();
+
+        app
+          ._internalEndSession()
+          .then((res) => {
+            console.log("endSession success");
+            print("endSession success");
+          })
+          .catch((reason) => {
+            console.error("endSession: fail reason=" + reason);
+            print("endSession: fail reason=" + reason, "ERROR");
+          });
+      }</script><script defer="defer" src="webex-embedded-app-sdk-master.js"></script></head><body><h3>Webex Apps SDK example</h3><h4>External API official v1</h4><button onclick="onReady()">onReady</button> <button onclick="onClickGetUser()">GetUser</button> <button onclick="onClickGetMeeting()">GetMeeting</button> <button onclick="onClickGetSpace()">GetSpace</button> <button onclick="onClickGetApplicationStates()">Show Application</button> <button onclick="onClickGetRedirectUrl()">GetRedirectUrl</button> <button onclick="onClickAuthenticate()">Authenticate</button> <button onclick="addEvents()">Add Events</button> <button onclick="removeEvents()">Remove Events</button> <button onclick="stopListening()">Stop Listening</button><section class="group"><button onclick="onClickOpenUrlInSystemBrowser()">openUrlInSystemBrowser</button><div class="inputs"><label>url</label> <input id="urlInSystemBrowser" value="https://url.opened.in.system.browser"/></div></section><section class="group"><h5>SetShareUrl / ClearShareUrl</h5><button onclick="onClickSetShareUrl()">SetShareUrl</button> <button onclick="onClickClearShareUrl()">clearShareUrl</button><div class="inputs"><label>InternalUrl</label> <input id="internalUrl" value="https://this.is.internal.url"/> <label>ExternalUrl</label> <input id="externalUrl" value="https://this.is.external.url"/> <label>Title</label> <input id="setShareUrlTitle" value="Title 123"/></div></section><h4>[Backward Compatibility] MC41.6 / Phase 1 SDK</h4><button onclick="onClickStartSession()">StartSession</button> <button onclick="onClickEndSession()">EndSession</button><section><h5 id="stateTitle" class="label">States</h5><pre class="output"><code id="stateContent"></code></pre></section><section><h5 class="label">Error</h5><div id="outputError" class="output" style="height: 150px"></div></section><section><h5 class="label">Info</h5><div id="outputInfo" class="output"></div></section></body></html>
