@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Hello Webex</title>
+    <script>
+        if (!window.Webex) {
+            console.log('Webex not exists (expected)', Date.now())
+        }
+        window.onload = function () {
+            if (Webex) {
+                console.log('Webex exists (expected)', Date.now())
+            } else {
+                console.error('Webex not exists (shoud exist)', Date.now())
+            }
+        };
+
+        setTimeout(function () {
+            var app = new Webex.Application();
+            app.onReady().then(function () {
+                print("onReady done");
+                getMeetingTitle();
+                setShareUrl();
+            });
+        }, 500);
+
+        //
+        // External API examples
+        //
+        function setShareUrl() {
+            var app = new Webex.Application();
+
+            var internalUrl = "https://ankursharma319.github.io/test-html-host/embedded_app_hello";
+            var externalUrl = "https://ankursharma319.github.io/test-html-host/embedded_app_hello";
+            var title = "My title";
+            var opt = {};
+
+            app
+                .setShareUrl(internalUrl, externalUrl, title, opt)
+                .then(function (res) {
+                    console.log("Promise setShareUrl success", JSON.stringify(res));
+                    print("Promise setShareUrl success", JSON.stringify(res));
+                })
+                .catch(function (reason) {
+                    console.error("setShareUrl: fail reason=" + reason);
+                    print("setShareUrl: fail reason=" + reason);
+                });
+        }
+
+        function getMeetingTitle() {
+            var app = new Webex.Application();
+
+            app.context
+                .getMeeting()
+                .then(function (meeting) {
+                    console.log("Promise getMeeting success", JSON.stringify(meeting));
+                    print("Promise getMeeting success", JSON.stringify(meeting));
+                    const titleElement = document.getElementById("my_label");
+                    console.log("meeting", meeting);
+                    console.log("meeting.title", meeting.title);
+                    titleElement.innerHTML = meeting.title;
+                })
+                .catch(function (reason) {
+                    console.error("getMeeting: fail reason=" + reason);
+                    print("getMeeting: fail reason=" + reason, "ERROR");
+                });
+        }
+    </script>
+    <script defer="defer" src="webex-embedded-app-sdk-master.js"></script>
+</head>
+
+<body>
+    <h3 style="color:rgb(228, 103, 151);">Hello </h3>
+    <h2 style="color:rgb(228, 103, 151);" id="my_label"></h2>
+</body>
+
+</html>
