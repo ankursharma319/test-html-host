@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Skribbl Embedded App</title>
+    <script>
+        if (!window.Webex) {
+            console.log('Webex not exists (expected)', Date.now())
+        }
+        window.onload = function () {
+            if (Webex) {
+                console.log('Webex exists (expected)', Date.now())
+            } else {
+                console.error('Webex not exists (shoud exist)', Date.now())
+            }
+        };
+
+        setTimeout(function () {
+            var app = new Webex.Application();
+            app.onReady().then(function () {
+                print("onReady done");
+            });
+        }, 500);
+
+        //
+        // External API examples
+        //
+        function setShareUrl() {
+            var app = new Webex.Application();
+            console.log("setShareUrl")
+            var my_url = document.getElementById("invite_url").value;
+            console.log("invite_url = " + my_url)
+            var internalUrl = my_url;
+            var externalUrl = my_url;
+            var title = "Skribbl!";
+            var opt = {};
+
+            app
+                .setShareUrl(internalUrl, externalUrl, title, opt)
+                .then(function (res) {
+                    console.log("Promise setShareUrl success", JSON.stringify(res));
+                    print("Promise setShareUrl success", JSON.stringify(res));
+                })
+                .catch(function (reason) {
+                    console.error("setShareUrl: fail reason=" + reason);
+                    print("setShareUrl: fail reason=" + reason);
+                });
+        }
+
+        function getMeetingTitle() {
+            var app = new Webex.Application();
+
+            app.context
+                .getMeeting()
+                .then(function (meeting) {
+                    console.log("Promise getMeeting success", JSON.stringify(meeting));
+                    print("Promise getMeeting success", JSON.stringify(meeting));
+                    const titleElement = document.getElementById("my_label");
+                    console.log("meeting", meeting);
+                    console.log("meeting.title", meeting.title);
+                    titleElement.innerHTML = meeting.title;
+                })
+                .catch(function (reason) {
+                    console.error("getMeeting: fail reason=" + reason);
+                    print("getMeeting: fail reason=" + reason, "ERROR");
+                });
+        }
+    </script>
+    <script defer="defer" src="webex-embedded-app-sdk-master.js"></script>
+</head>
+<body>
+
+<div width="100%">
+<iframe
+    id="iframehtml5" width="100%" height="700"
+    src="https://skribbl.io/" frameborder="0"
+    scrolling="no"
+    class="iframe-default"
+    allowfullscreen=""
+    allow="clipboard-read; clipboard-write">
+</iframe>
+</div>
+
+<label for="invite_url"><h2>Paste invite url here:</h2></label>
+<input type="text" id="invite_url" name="invite_url" size="40" style="font-size:25px;"> 
+
+<button type="button" size="40" style="font-size:25px;" onclick="setShareUrl()">
+    Share link
+</button>
+
+
+</body>
+</html>
